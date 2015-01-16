@@ -93,17 +93,17 @@ void printBallChars(int x, int y) {
     }
   }
 
-  lcd.createChar(0, buf[0]);
-  lcd.createChar(1, buf[1]);
-  lcd.createChar(2, buf[2]);
-  lcd.createChar(3, buf[3]);
-
   for (int x = 0; x < CHARS_WIDTH; x++) {
     for (int y = 0; y < CHARS_HEIGHT; y++) {
       lcd.setCursor(x, y);
       lcd.write((byte)' ');
     }
   }
+
+  lcd.createChar(0, buf[0]);
+  lcd.createChar(1, buf[1]);
+  lcd.createChar(2, buf[2]);
+  lcd.createChar(3, buf[3]);
 
   for (int charX = 0; charX < 2; charX++) {
     for (int charY = 0; charY < 2; charY++) {
@@ -115,34 +115,71 @@ void printBallChars(int x, int y) {
   }
 }
 
+uint32_t last = 0;
+
 void setup() {
+  last = millis();
+
   Serial.begin(9600);           // set up Serial library at 9600 bps
 
   // initialize LCD and set up the number of columns and rows:
   lcd.begin(16, 2);
 }
 
-int ballX = 0;
-int ballY = 0;
+float ballX = 0;
+float ballY = 0;
 
-int ballDX = 1;
-int ballDY = 1;
+float ballDX = 0.005;
+float ballDY = 0.01;
 
 void loop() {
-    printBallChars(ballX, ballY);
-    
-    ballX += ballDX;
-    ballY += ballDY;
-    
-    if (ballX + 4 > GRID_WIDTH || ballX < 0) {
-      ballDX = -ballDX;
-      ballX += 2*ballDX;
-    }
+  int buttonVoltage = analogRead(0);
 
-    if (ballY + 4 > GRID_HEIGHT || ballY < 0) {
-      ballDY = -ballDY;
-      ballY += 2*ballDY;
-    }
-    
-    delay(100);
+  bool up = false;
+  bool down = false;
+  bool left = false;
+  bool right = false;
+  
+  if (abs(buttonVoltage - 99) < 10) {
+    up = true;
+  }
+  
+  if (abs(buttonVoltage - 255) < 10) {
+    down = true;
+  }
+  
+    if (abs(buttonVoltage - 0) < 10) {
+    right = true;
+  }
+
+      if (abs(buttonVoltage - 410) < 10) {
+    right = true;
+  }
+
+  Serial.println(buttonPressed);
+
+  uint32_t now = millis();
+
+  float distX = ballDX * (now - last);
+  float distY = ballDY * (now - last);
+
+  last = now;
+
+  if ((ballX + distX) + 4 > GRID_WIDTH || (ballX + distX) < 0) {
+    ballDX = -ballDX;
+    ballX -= distX;
+  } else {
+    ballX += distX;
+  }
+
+  if ((ballY + distY) + 4 > GRID_HEIGHT || (ballY + distY) < 0) {
+    ballDY = -ballDY;
+    ballY -= distY;
+  } else {
+    ballY += distY;
+  }
+
+  printBallChars(ballX, ballY);
+
+  delay(10);
 }
