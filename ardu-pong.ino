@@ -139,31 +139,34 @@ void loop() {
   bool down = false;
   bool left = false;
   bool right = false;
-  
+
   if (abs(buttonVoltage - 99) < 10) {
     up = true;
   }
-  
+
   if (abs(buttonVoltage - 255) < 10) {
     down = true;
   }
-  
-    if (abs(buttonVoltage - 0) < 10) {
+
+  if (abs(buttonVoltage - 0) < 10) {
     right = true;
   }
 
-      if (abs(buttonVoltage - 410) < 10) {
-    right = true;
+  if (abs(buttonVoltage - 410) < 10) {
+    left = true;
   }
-
-  Serial.println(buttonPressed);
 
   uint32_t now = millis();
-
-  float distX = ballDX * (now - last);
-  float distY = ballDY * (now - last);
-
+  uint32_t diff = (now - last);
   last = now;
+
+  ballDX -= left?diff*0.00001:0;
+  ballDX += right?diff*0.00001:0;
+  ballDY -= up?diff*0.00001:0;
+  ballDY += down?diff*0.00001:0;
+  
+  float distX = ballDX * diff;
+  float distY = ballDY * diff;
 
   if ((ballX + distX) + 4 > GRID_WIDTH || (ballX + distX) < 0) {
     ballDX = -ballDX;
