@@ -115,6 +115,80 @@ void printBallChars(int x, int y) {
   }
 }
 
+void printPaddles(int x, int y) {
+  byte buf[4][8] = {
+    {
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000
+    },
+    {
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000
+    },
+    {
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000
+    },
+    {
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000,
+      0b00000
+    }
+  };
+
+  for (int px = 0; px < 2; px++) {
+    for (int py = 0; py < 4; py++) {
+      if (((py == 0) + (px == 2) + (py == 3)) == 2) {
+        continue;
+      }
+
+      int currCharY = (y + py) / (CHAR_HEIGHT + SPACE_HEIGHT);
+
+      int subX = (x + px) % (CHAR_WIDTH + SPACE_WIDTH);
+      int subY = (y + py) % (CHAR_HEIGHT + SPACE_HEIGHT);
+
+      int charIndex = currCharY;
+
+      if (subX < CHAR_WIDTH && subY < CHAR_HEIGHT) {
+        buf[charIndex][subY] |= power(CHAR_WIDTH - 1 - subX);
+      }
+    }
+  }
+
+  lcd.createChar(4, buf[0]);
+  lcd.createChar(5, buf[1]);
+  lcd.createChar(6, buf[2]);
+  lcd.createChar(7, buf[3]);
+
+  for (int charY = 0; charY < 2; charY++) {
+    lcd.setCursor(0, charY);
+    lcd.write((byte)(charY + 4));
+  }
+}
+
 uint32_t last = 0;
 
 void setup() {
@@ -160,11 +234,11 @@ void loop() {
   uint32_t diff = (now - last);
   last = now;
 
-  ballDX -= left?diff*0.00001:0;
-  ballDX += right?diff*0.00001:0;
-  ballDY -= up?diff*0.00001:0;
-  ballDY += down?diff*0.00001:0;
-  
+  ballDX -= left ? diff * 0.00001 : 0;
+  ballDX += right ? diff * 0.00001 : 0;
+  ballDY -= up ? diff * 0.00001 : 0;
+  ballDY += down ? diff * 0.00001 : 0;
+
   float distX = ballDX * diff;
   float distY = ballDY * diff;
 
@@ -184,5 +258,7 @@ void loop() {
 
   printBallChars(ballX, ballY);
 
-  delay(10);
+ //rintPaddles(1, 5);
+
+  delay(50);
 }
